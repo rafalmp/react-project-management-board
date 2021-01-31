@@ -14,7 +14,33 @@ const BoardWrapper = styled.div`
 `;
 
 class Board extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: [],
+      loading: true,
+      error: '',
+    }
+  }
+
+  async componentDidMount() {
+    await fetch('assets/data.json')
+      .then(response => response.json())
+      .then(tickets => {
+        this.setState({
+          data: tickets,
+        })
+      })
+      .catch(err => {
+        this.setState({
+          error: err.message,
+        })
+      })
+      .finally(() => this.setState({ loading: false }))
+  }
+
   render() {
+    const { data, loading, error } = this.state;
     const lanes = [
       { id: 1, title: 'To Do' },
       { id: 2, title: 'In Progress' },
@@ -25,7 +51,13 @@ class Board extends Component {
     return (
       <BoardWrapper>
         {lanes.map(lane => (
-          <Lane key={lane.id} title={lane.title} />
+          <Lane
+            key={lane.id}
+            title={lane.title}
+            loading={loading}
+            error={error}
+            tickets={data.filter(ticket => ticket.lane === lane.id)}
+          />
         ))}
       </BoardWrapper>
     );
